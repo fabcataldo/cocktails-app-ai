@@ -1,0 +1,139 @@
+<div class="cocktail-filter p-6">
+  <h2 class="text-3xl font-bold mb-6 text-gray-800">Filtrar Cócteles</h2>
+
+  <!-- Letter Filter Buttons -->
+  <div class="letter-filter mb-8">
+    <h3 class="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">
+      Selecciona la primera letra
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        *ngFor="let letter of letters"
+        [label]="letter"
+        [outlined]="!(selectedLetter$ | async) || (selectedLetter$ | async) !== letter"
+        [severity]="(selectedLetter$ | async) === letter ? 'primary' : 'secondary'"
+        (onClick)="filterByLetter(letter)"
+        styleClass="letter-btn"
+        [attr.aria-label]="'Filtrar por letra ' + letter"
+      ></p-button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <p-message
+    *ngIf="error$ | async as error"
+    severity="error"
+    [text]="error"
+    styleClass="mb-4"
+  ></p-message>
+
+  <!-- Loading State -->
+  <div *ngIf="loading$ | async" class="loading-container text-center py-12">
+    <p-progressSpinner
+      styleClass="w-16 h-16"
+      strokeWidth="4"
+      animationDuration="1s"
+    ></p-progressSpinner>
+    <p class="mt-4 text-gray-600 font-medium">Cargando cócteles...</p>
+  </div>
+
+  <!-- No Results Message -->
+  <div *ngIf="noResults$ | async" class="no-results text-center py-12">
+    <i class="pi pi-info-circle text-6xl text-gray-400 mb-4"></i>
+    <p class="text-xl text-gray-600 font-medium">No se encontraron resultados</p>
+    <p class="text-sm text-gray-500 mt-2">Intenta con otra letra</p>
+  </div>
+
+  <!-- Cocktails Table -->
+  <div *ngIf="(cocktails$ | async) as cocktails" class="cocktails-table">
+    <div *ngIf="cocktails.length > 0 && !(loading$ | async)">
+      <p-table
+        [value]="cocktails"
+        [paginator]="true"
+        [rows]="10"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} cócteles"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-striped"
+        responsiveLayout="scroll"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id">
+              ID <p-sortIcon field="id"></p-sortIcon>
+            </th>
+            <th>Imagen</th>
+            <th pSortableColumn="name">
+              Nombre <p-sortIcon field="name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="category">
+              Categoría <p-sortIcon field="category"></p-sortIcon>
+            </th>
+            <th pSortableColumn="alcoholic">
+              Tipo <p-sortIcon field="alcoholic"></p-sortIcon>
+            </th>
+            <th pSortableColumn="ingredientsCount">
+              Ingredientes <p-sortIcon field="ingredientsCount"></p-sortIcon>
+            </th>
+            <th pSortableColumn="dateModified">
+              Fecha Modificación <p-sortIcon field="dateModified"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-cocktail>
+          <tr>
+            <td>{{ cocktail.id }}</td>
+            <td>
+              <img
+                [src]="cocktail.image"
+                [alt]="cocktail.name"
+                class="cocktail-image w-16 h-16 object-cover rounded-lg shadow-sm"
+                loading="lazy"
+              />
+            </td>
+            <td class="font-semibold">{{ cocktail.name }}</td>
+            <td>
+              <span class="category-badge">{{ cocktail.category }}</span>
+            </td>
+            <td>
+              <span
+                class="alcoholic-badge"
+                [class.alcoholic]="cocktail.alcoholic === 'Alcoholic'"
+                [class.non-alcoholic]="cocktail.alcoholic === 'Non alcoholic'"
+              >
+                {{ cocktail.alcoholic }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="ingredients-count">{{ cocktail.ingredientsCount }}</span>
+            </td>
+            <td class="text-sm text-gray-600">{{ cocktail.dateModified || 'N/A' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <tr>
+            <td colspan="7" class="totals-footer">
+              <div class="flex gap-6 items-center">
+                <div class="total-item">
+                  <i class="pi pi-chart-bar mr-2"></i>
+                  <span class="font-bold">Total:</span>
+                  <span class="ml-2">{{ cocktails.length }}</span>
+                </div>
+                <div class="total-item alcoholic">
+                  <i class="pi pi-check-circle mr-2"></i>
+                  <span class="font-bold">Alcohólicos:</span>
+                  <span class="ml-2">{{ alcoholicCount$ | async }}</span>
+                </div>
+                <div class="total-item non-alcoholic">
+                  <i class="pi pi-times-circle mr-2"></i>
+                  <span class="font-bold">No Alcohólicos:</span>
+                  <span class="ml-2">{{ nonAlcoholicCount$ | async }}</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
